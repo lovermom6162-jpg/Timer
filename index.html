@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Garden | Date & Time Tools</title>
+<style>
+:root{--ink:#38264d;--muted:#82728f;--pink:#ff7eb6;--purple:#8b5cf6;--line:#eee3f6}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:20px;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 12% 8%,#ffe0ee 0,transparent 32%),radial-gradient(circle at 90% 85%,#ded5ff 0,transparent 38%),linear-gradient(135deg,#fff8fc,#f6f2ff)}
+.wrap{max-width:900px;margin:0 auto}
+header{text-align:center;padding:18px 0 22px}
+.eyebrow{font-size:.78rem;letter-spacing:.18em;font-weight:800;color:#8b5cf6}
+h1{font-size:clamp(2.1rem,7vw,3.6rem);margin:9px 0;line-height:1.08}
+header p{color:var(--muted);margin:0 auto;max-width:600px;line-height:1.6}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 18px}
+.tab{background:#ffffffc9;color:#6d527f;border:1px solid #fff;padding:14px 10px;border-radius:16px;box-shadow:none}
+.tab.active{color:white;background:linear-gradient(110deg,var(--pink),var(--purple))}
+.card{background:#ffffffdf;border:1px solid #fff;border-radius:24px;padding:clamp(18px,4vw,32px);box-shadow:0 18px 55px #6b4b8c17}
+.panel{display:none}.panel.active{display:block}
+h2{margin:0 0 7px;font-size:1.45rem}.desc{margin:0 0 22px;color:var(--muted);line-height:1.6}
+label{display:block;font-weight:700;font-size:.9rem;margin:0 0 7px}
+input{width:100%;padding:13px 14px;border:1px solid #e5d8ed;border-radius:12px;background:white;font:inherit;color:var(--ink);outline:none}
+input:focus{border-color:var(--purple);box-shadow:0 0 0 3px #8b5cf622}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field.full{grid-column:1/-1}
+button{font:inherit;font-weight:800;border:0;border-radius:13px;padding:13px 17px;cursor:pointer}
+.primary{color:white;background:linear-gradient(100deg,var(--pink),var(--purple));box-shadow:0 8px 20px #8b5cf62a}
+.secondary{background:#f4edfa;color:#745b8b}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.result{margin-top:23px;border:1px solid var(--line);border-radius:18px;padding:18px;background:linear-gradient(140deg,#fff,#fcf8ff)}
+.result-title{font-weight:800;margin-bottom:12px;overflow-wrap:anywhere}
+.units{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.unit{text-align:center;padding:14px 6px;border-radius:14px;background:#f9f3ff}
+.num{font-size:clamp(1.35rem,4.6vw,2.25rem);font-weight:850;color:#7c3aed;font-variant-numeric:tabular-nums;display:block;line-height:1.2;overflow-wrap:anywhere}
+.unit small{color:var(--muted)}
+.note{color:var(--muted);font-size:.87rem;min-height:1.4em;margin:13px 0 0;line-height:1.5}
+.diffout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.diffbox{background:#f9f3ff;border-radius:15px;padding:16px;text-align:center}
+.diffnum{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:850;color:#7c3aed;overflow-wrap:anywhere}
+.diffbox small{display:block;color:var(--muted);margin-top:4px}
+.footer{text-align:center;color:#9b8ca7;font-size:.8rem;padding:20px 0 6px}
+[hidden]{display:none!important}
+@media(max-width:560px){body{padding:12px}.tabs{grid-template-columns:1fr}.tab{text-align:left}.fields,.diffout{grid-template-columns:1fr}.field.full{grid-column:auto}.units{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="eyebrow">YOUR PERSONAL TIME SPACE ✦</div>
+ <h1>Time Garden 🌷</h1>
+ <p>Compare dates, count down to a special day, or create your own custom timer.</p>
+</header>
+<nav class="tabs" aria-label="Time tools">
+ <button type="button" class="tab active" data-tab="difference">📅 Date Difference</button>
+ <button type="button" class="tab" data-tab="countdown">⏳ Date Countdown</button>
+ <button type="button" class="tab" data-tab="goal">✨ Custom Time Goal</button>
+</nav>
+<main class="card">
+<section class="panel active" id="difference">
+ <h2>Time Between Two Dates 📆</h2>
+ <p class="desc">Choose any two dates to calculate the difference in days, hours, minutes, and full years.</p>
+ <form id="diffForm">
+  <div class="fields">
+   <div class="field"><label for="dateA">Start Date</label><input type="date" id="dateA" required></div>
+   <div class="field"><label for="dateB">End Date</label><input type="date" id="dateB" required></div>
+   <div class="field full"><button class="primary" type="submit">Calculate Difference 💗</button></div>
+  </div>
+ </form>
+ <div class="result" id="diffResult" hidden>
+  <div class="result-title" id="diffHeading">Date Difference</div>
+  <div class="diffout">
+   <div class="diffbox"><div class="diffnum" id="diffDays">0</div><small>Total Days</small></div>
+   <div class="diffbox"><div class="diffnum" id="diffHours">0</div><small>Total Hours</small></div>
+   <div class="diffbox"><div class="diffnum" id="diffMinutes">0</div><small>Total Minutes</small></div>
+   <div class="diffbox"><div class="diffnum" id="diffYears">0</div><small>Full Years</small></div>
+  </div>
+  <p class="note">Date difference is calculated using calendar days. The time values are total hours and minutes across those days.</p>
+ </div>
+</section>
+<section class="panel" id="countdown">
+ <h2>Countdown to a Special Day 💖</h2>
+ <p class="desc">Choose a future date and time to see the remaining days, hours, minutes, and seconds live.</p>
+ <form id="countForm">
+  <div class="fields">
+   <div class="field full"><label for="eventName">Event Name (Optional)</label><input id="eventName" maxlength="70" placeholder="e.g. My Special Day 💗"></div>
+   <div class="field"><label for="targetDate">Target Date</label><input type="date" id="targetDate" required></div>
+   <div class="field"><label for="targetTime">Target Time</label><input type="time" id="targetTime" value="00:00" required></div>
+   <div class="field full"><button class="primary" type="submit">Start Countdown ✨</button></div>
+  </div>
+ </form>
+ <div class="result" id="countResult" hidden>
+  <div class="result-title" id="countHeading">Time Remaining</div>
+  <div class="units">
+   <div class="unit"><span class="num" id="cdDays">0</span><small>Days</small></div>
+   <div class="unit"><span class="num" id="cdHours">00</span><small>Hours</small></div>
+   <div class="unit"><span class="num" id="cdMinutes">00</span><small>Minutes</small></div>
+   <div class="unit"><span class="num" id="cdSeconds">00</span><small>Seconds</small></div>
+  </div>
+  <p class="note" id="countNote" aria-live="polite"></p>
+ </div>
+</section>
+<section class="panel" id="goal">
+ <h2>Create Your Own Time Goal ✨</h2>
+ <p class="desc">Set a timer for studying, a task, a break, or a personal challenge. You can pause, resume, and reset it.</p>
+ <form id="goalForm">
+  <div class="fields">
+   <div class="field full"><label for="goalName">Goal Name</label><input id="goalName" maxlength="70" placeholder="e.g. Study Time 📚" required></div>
+   <div class="field"><label for="goalDays">Days</label><input id="goalDays" type="number" min="0" max="3650" value="0" required></div>
+   <div class="field"><label for="goalHours">Hours</label><input id="goalHours" type="number" min="0" max="23" value="0" required></div>
+   <div class="field"><label for="goalMinutes">Minutes</label><input id="goalMinutes" type="number" min="0" max="59" value="25" required></div>
+   <div class="field"><label for="goalSeconds">Seconds</label><input id="goalSeconds" type="number" min="0" max="59" value="0" required></div>
+   <div class="field full"><button class="primary" type="submit">Start Goal Timer 🚀</button></div>
+  </div>
+ </form>
+ <div class="result" id="goalResult" hidden>
+  <div class="result-title" id="goalHeading">Goal in Progress</div>
+  <div class="units">
+   <div class="unit"><span class="num" id="gDays">0</span><small>Days</small></div>
+   <div class="unit"><span class="num" id="gHours">00</span><small>Hours</small></div>
+   <div class="unit"><span class="num" id="gMinutes">00</span><small>Minutes</small></div>
+   <div class="unit"><span class="num" id="gSeconds">00</span><small>Seconds</small></div>
+  </div>
+  <p class="note" id="goalNote" aria-live="polite"></p>
+  <div class="actions"><button type="button" class="secondary" id="pauseGoal">Pause</button><button type="button" class="secondary" id="resetGoal">Reset</button></div>
+ </div>
+</section>
+</main>
+<div class="footer">Made with ♡ • Times use your device's local time</div>
+</div>
+<script>
+'use strict';
+document.querySelectorAll('.tab').forEach(function(button){
+ button.addEventListener('click',function(){
+  document.querySelectorAll('.tab').forEach(function(tab){tab.classList.toggle('active',tab===button);});
+  document.querySelectorAll('.panel').forEach(function(panel){panel.classList.toggle('active',panel.id===button.dataset.tab);});
+ });
+});
+function localDate(value){
+ var parts=value.split('-').map(Number);
+ return new Date(parts[0],parts[1]-1,parts[2]);
+}
+document.getElementById('diffForm').addEventListener('submit',function(event){
+ event.preventDefault();
+ var startValue=document.getElementById('dateA').value;
+ var endValue=document.getElementById('dateB').value;
+ if(!startValue||!endValue)return;
+ var a=localDate(startValue),b=localDate(endValue);
+ var earlier=a<=b?a:b, later=a<=b?b:a;
+ var days=Math.round((later-earlier)/86400000);
+ document.getElementById('diffDays').textContent=days.toLocaleString('en-US');
+ document.getElementById('diffHours').textContent=(days*24).toLocaleString('en-US');
+ document.getElementById('diffMinutes').textContent=(days*1440).toLocaleString('en-US');
+ var years=later.getFullYear()-earlier.getFullYear();
+ var anniversary=new Date(earlier);
+ anniversary.setFullYear(earlier.getFullYear()+years);
+ if(anniversary>later)years--;
+ document.getElementById('diffYears').textContent=Math.max(0,years).toLocaleString('en-US');
+ document.getElementById('diffHeading').textContent=startValue+'  ↔  '+endValue;
+ document.getElementById('diffResult').hidden=false;
+});
+var countdownInterval=null;
+var countdownTarget=null;
+function pad(number){return String(number).padStart(2,'0');}
+function updateCountdown(){
+ if(countdownTarget===null)return;
+ var remaining=countdownTarget-Date.now();
+ if(remaining<=0){
+  ['cdDays','cdHours','cdMinutes','cdSeconds'].forEach(function(id){document.getElementById(id).textContent='00';});
+  document.getElementById('countNote').textContent="It's time! 💖";
+  if(countdownInterval!==null)clearInterval(countdownInterval);
+  countdownInterval=null;
+  return;
+ }
+ var totalSeconds=Math.floor(remaining/1000);
+ document.getElementById('cdDays').textContent=Math.floor(totalSeconds/86400).toLocaleString('en-US');
+ document.getElementById('cdHours').textContent=pad(Math.floor(totalSeconds%86400/3600));
+ document.getElementById('cdMinutes').textContent=pad(Math.floor(totalSeconds%3600/60));
+ document.getElementById('cdSeconds').textContent=pad(totalSeconds%60);
+ document.getElementById('countNote').textContent='The countdown updates every second.';
+}
+document.getElementById('countForm').addEventListener('submit',function(event){
+ event.preventDefault();
+ var date=document.getElementById('targetDate').value;
+ var time=document.getElementById('targetTime').value;
+ if(!date||!time)return;
+ countdownTarget=new Date(date+'T'+time+':00').getTime();
+ if(!Number.isFinite(countdownTarget)){document.getElementById('countNote').textContent='Please choose a valid date and time.';return;}
+ document.getElementById('countHeading').textContent=document.getElementById('eventName').value.trim()||'Your Special Day 💗';
+ document.getElementById('countResult').hidden=false;
+ if(countdownInterval!==null)clearInterval(countdownInterval);
+ updateCountdown();
+ if(countdownTarget>Date.now())countdownInterval=setInterval(updateCountdown,1000);
+});
+var goalInterval=null,goalEnd=0,goalRemaining=0,goalRunning=false;
+function drawGoal(){
+ var seconds=Math.max(0,Math.ceil(goalRemaining/1000));
+ document.getElementById('gDays').textContent=Math.floor(seconds/86400).toLocaleString('en-US');
+ document.getElementById('gHours').textContent=pad(Math.floor(seconds%86400/3600));
+ document.getElementById('gMinutes').textContent=pad(Math.floor(seconds%3600/60));
+ document.getElementById('gSeconds').textContent=pad(seconds%60);
+}
+function tickGoal(){
+ goalRemaining=Math.max(0,goalEnd-Date.now());
+ drawGoal();
+ if(goalRemaining<=0){
+  if(goalInterval!==null)clearInterval(goalInterval);
+  goalInterval=null;goalRunning=false;
+  document.getElementById('goalNote').textContent='Goal complete! Great job 🎉';
+  document.getElementById('pauseGoal').textContent='Start Again';
+ }else{
+  document.getElementById('goalNote').textContent="Stay focused—you've got this! 🌱";
+ }
+}
+document.getElementById('goalForm').addEventListener('submit',function(event){
+ event.preventDefault();
+ var ids=['goalDays','goalHours','goalMinutes','goalSeconds'];
+ var values=ids.map(function(id){return Number(document.getElementById(id).value);});
+ if(values.some(function(v){return !Number.isFinite(v)||v<0;}))return;
+ var total=(((values[0]*24+values[1])*60+values[2])*60+values[3])*1000;
+ if(total<=0){document.getElementById('goalNote').textContent='Please enter a duration of at least 1 second.';document.getElementById('goalResult').hidden=false;return;}
+ if(goalInterval!==null)clearInterval(goalInterval);
+ goalRemaining=total;goalEnd=Date.now()+total;goalRunning=true;
+ document.getElementById('goalHeading').textContent=document.getElementById('goalName').value.trim();
+ document.getElementById('goalResult').hidden=false;
+ document.getElementById('pauseGoal').textContent='Pause';
+ tickGoal();
+ if(goalRemaining>0)goalInterval=setInterval(tickGoal,250);
+});
+document.getElementById('pauseGoal').addEventListener('click',function(){
+ if(goalRunning){
+  goalRemaining=Math.max(0,goalEnd-Date.now());
+  if(goalInterval!==null)clearInterval(goalInterval);
+  goalInterval=null;goalRunning=false;drawGoal();
+  document.getElementById('goalNote').textContent='The timer is paused.';
+  document.getElementById('pauseGoal').textContent='Resume';
+ }else if(goalRemaining>0){
+  goalEnd=Date.now()+goalRemaining;goalRunning=true;
+  document.getElementById('pauseGoal').textContent='Pause';
+  tickGoal();
+  if(goalRemaining>0)goalInterval=setInterval(tickGoal,250);
+ }else{
+  document.getElementById('goalNote').textContent='Set a new duration above to start again.';
+ }
+});
+document.getElementById('resetGoal').addEventListener('click',function(){
+ if(goalInterval!==null)clearInterval(goalInterval);
+ goalInterval=null;goalRunning=false;goalRemaining=0;goalEnd=0;drawGoal();
+ document.getElementById('goalNote').textContent='Timer reset. Enter a duration above to start again.';
+ document.getElementById('pauseGoal').textContent='Pause';
+});
+</script>
+</body>
+</html>
